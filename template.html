@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GIM Maintenance Schedule</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gim-green: #7ac142;
+      --gim-black: #111111;
+      --gim-white: #ffffff;
+      --card: #1c1c1c;
+      --muted: #9a9a9a;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Copperplate Gothic Light", "Copperplate", "Copperplate Gothic", Georgia, serif;
+      background: var(--gim-black);
+      color: var(--gim-white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100%;
+      background: var(--gim-black);
+      border-bottom: 4px solid var(--gim-green);
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+    header h1 {
+      font-family: "Alfa Slab One", cursive;
+      color: var(--gim-green);
+      font-size: clamp(1.6rem, 5vw, 2.8rem);
+      letter-spacing: 1px;
+    }
+    header p {
+      margin-top: 0.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      opacity: 0.85;
+    }
+    main {
+      width: 100%;
+      max-width: 820px;
+      flex: 1;
+      padding: 2rem 1rem 3rem;
+    }
+    .day-group { margin-bottom: 2rem; }
+    .day-heading {
+      font-family: "Alfa Slab One", cursive;
+      color: var(--gim-green);
+      font-size: 1.05rem;
+      letter-spacing: 0.5px;
+      padding-bottom: 0.5rem;
+      margin-bottom: 0.85rem;
+      border-bottom: 1px solid rgba(122, 193, 66, 0.35);
+    }
+    .event {
+      background: var(--card);
+      border-left: 4px solid var(--gim-green);
+      border-radius: 6px;
+      padding: 0.9rem 1.1rem;
+      margin-bottom: 0.75rem;
+    }
+    .event-time {
+      color: var(--gim-green);
+      font-size: 0.8rem;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      margin-bottom: 0.25rem;
+    }
+    .event-title {
+      font-size: 1.05rem;
+      font-weight: bold;
+      letter-spacing: 0.5px;
+    }
+    .event-meta {
+      margin-top: 0.4rem;
+      font-size: 0.85rem;
+      color: var(--muted);
+      display: flex;
+      align-items: flex-start;
+      gap: 0.4rem;
+      line-height: 1.4;
+    }
+    .event-meta svg { flex: 0 0 auto; margin-top: 2px; fill: var(--gim-green); }
+    .event-desc {
+      margin-top: 0.55rem;
+      font-size: 0.85rem;
+      color: #cfcfcf;
+      line-height: 1.5;
+      white-space: pre-wrap;
+    }
+    .empty {
+      text-align: center;
+      color: var(--muted);
+      padding: 3rem 1rem;
+      font-size: 1rem;
+      letter-spacing: 1px;
+    }
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 1.25rem 1rem;
+      font-size: 0.72rem;
+      letter-spacing: 1px;
+      color: var(--gim-white);
+      opacity: 0.55;
+      border-top: 1px solid rgba(122, 193, 66, 0.4);
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GIM Maintenance Schedule</h1>
+    <p>{{RANGE}}</p>
+  </header>
+  <main>
+    {{EVENTS}}
+  </main>
+  <footer>
+    &copy; GIM &mdash; All times Eastern (America/New_York) &middot; Last updated {{UPDATED}}
+  </footer>
+</body>
+</html>
