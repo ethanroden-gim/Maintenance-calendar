@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>GIM Calendar</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Alfa+Slab+One&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --gim-green: #7ac142;
+      --gim-black: #111111;
+      --gim-white: #ffffff;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: "Copperplate Gothic Light", "Copperplate", "Copperplate Gothic", Georgia, serif;
+      background: var(--gim-black);
+      color: var(--gim-white);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    header {
+      width: 100%;
+      background: var(--gim-black);
+      border-bottom: 4px solid var(--gim-green);
+      padding: 1.5rem 1rem;
+      text-align: center;
+    }
+    header h1 {
+      font-family: "Alfa Slab One", cursive;
+      color: var(--gim-green);
+      font-size: clamp(1.6rem, 5vw, 2.8rem);
+      letter-spacing: 1px;
+    }
+    header p {
+      margin-top: 0.5rem;
+      letter-spacing: 2px;
+      text-transform: uppercase;
+      font-size: 0.85rem;
+      color: var(--gim-white);
+      opacity: 0.85;
+    }
+    main {
+      width: 100%;
+      max-width: 1000px;
+      flex: 1;
+      padding: 2rem 1rem;
+      display: flex;
+      justify-content: center;
+    }
+    .calendar-frame {
+      width: 100%;
+      background: var(--gim-white);
+      border: 4px solid var(--gim-green);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+    }
+    .calendar-frame iframe {
+      display: block;
+      width: 100%;
+      height: 700px;
+      border: 0;
+    }
+    footer {
+      width: 100%;
+      text-align: center;
+      padding: 1.25rem 1rem;
+      font-size: 0.75rem;
+      letter-spacing: 1px;
+      color: var(--gim-white);
+      opacity: 0.6;
+      border-top: 1px solid rgba(122, 193, 66, 0.4);
+    }
+    @media (max-width: 600px) {
+      .calendar-frame iframe { height: 560px; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <h1>GIM Calendar</h1>
+    <p>Upcoming Events &amp; Holidays</p>
+  </header>
+  <main>
+    <div class="calendar-frame">
+      <iframe
+        src="https://calendar.google.com/calendar/embed?height=600&wkst=1&ctz=America%2FNew_York&showTz=0&showTabs=0&showCalendars=0&showTitle=0&showPrint=0&src=Y18wMTFhYjFkMTFiOTE3OTMyMGUyMDU0NDlmNDQ3NjM2NmYzMTFhNTk3Y2RkOGIzNTk5ZTBjMGRjNmJlMGI0NjYzQGdyb3VwLmNhbGVuZGFyLmdvb2dsZS5jb20&src=ZW4udXNhI2hvbGlkYXlAZ3JvdXAudi5jYWxlbmRhci5nb29nbGUuY29t&color=%23b39ddb&color=%23a79b8e"
+        frameborder="0"
+        scrolling="no"
+        title="GIM Public Calendar"></iframe>
+    </div>
+  </main>
+  <footer>
+    &copy; GIM &mdash; All times shown in Eastern Time (America/New_York)
+  </footer>
+</body>
+</html>
