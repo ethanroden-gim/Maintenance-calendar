@@ -1,76 +1,48 @@
 #!/usr/bin/env python3
-"""Fetch events from the (private) GIM Google Calendar via a service account
-and render a branded static page to public/index.html.
+"""Fetch events from the GIM maintenance calendar JSON feed (an Apps Script web
+app) and render a branded static page to public/index.html.
 
 Env:
-  GCAL_CREDENTIALS  JSON contents of the service-account key (required unless DEMO=1)
-  CALENDAR_ID       calendar id to read (defaults to the GIM maintenance calendar)
-  DAYS_AHEAD        how many days forward to include (default 120)
-  DEMO              if "1", render sample events instead of calling Google (for local preview)
+  CALENDAR_FEED_URL  full URL of the Apps Script /exec feed (incl. ?token=... if set).
+                     Required unless DEMO=1.
+  DAYS_AHEAD         window length shown in the header label (default 120).
+  DEMO               if "1", render sample events instead of fetching (local preview).
 """
 import os
 import re
 import json
 import html
-from datetime import datetime, timedelta, timezone
+import urllib.request
+from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 
 TZ = ZoneInfo("America/New_York")
-CAL_ID = os.environ.get(
-    "CALENDAR_ID",
-    "c_011ab1d11b9179320e205449f4476366f311a597cdd8b3599e0c0dc6be0b4663@group.calendar.google.com",
-)
 DAYS_AHEAD = int(os.environ.get("DAYS_AHEAD", "120"))
-SCOPES = ["https://www.googleapis.com/auth/calendar.readonly"]
 
 
 def fetch_events():
-    """Return a list of Google Calendar event dicts."""
+    """Return a list of normalized event dicts:
+    {title, start, end, allDay, location, description}."""
     if os.environ.get("DEMO") == "1":
         return _sample_events()
-    from google.oauth2 import service_account
-    from googleapiclient.discovery import build
-
-    info = json.loads(os.environ["GCAL_CREDENTIALS"])
-    creds = service_account.Credentials.from_service_account_info(info, scopes=SCOPES)
-    svc = build("calendar", "v3", credentials=creds, cache_discovery=False)
-
-    now = datetime.now(timezone.utc)
-    time_min = now.isoformat()
-    time_max = (now + timedelta(days=DAYS_AHEAD)).isoformat()
-
-    items, page_token = [], None
-    while True:
-        resp = (
-            svc.events()
-            .list(
-                calendarId=CAL_ID,
-                timeMin=time_min,
-                timeMax=time_max,
-                singleEvents=True,
-                orderBy="startTime",
-                maxResults=250,
-                pageToken=page_token,
-            )
-            .execute()
-        )
-        items.extend(resp.get("items", []))
-        page_token = resp.get("nextPageToken")
-        if not page_token:
-            break
-    return items
+    url = os.environ["CALENDAR_FEED_URL"]
+    req = urllib.request.Request(url, headers={"User-Agent": "gim-calendar-build"})
+    with urllib.request.urlopen(req, timeout=30) as resp:
+        data = json.loads(resp.read().decode("utf-8"))
+    if isinstance(data, dict) and data.get("error"):
+        raise RuntimeError(f"Feed error: {data['error']} (check FEED_TOKEN / access).")
+    return data.get("events", []) if isinstance(data, dict) else data
 
 
 def parse_times(ev):
     """Return (start_dt, end_dt, all_day) in Eastern time."""
-    start, end = ev["start"], ev["end"]
-    if "dateTime" in start:
-        sd = datetime.fromisoformat(start["dateTime"]).astimezone(TZ)
-        ed = datetime.fromisoformat(end["dateTime"]).astimezone(TZ)
-        return sd, ed, False
-    sd = datetime.fromisoformat(start["date"]).replace(tzinfo=TZ)
-    ed = datetime.fromisoformat(end["date"]).replace(tzinfo=TZ)
-    return sd, ed, True
+    if ev.get("allDay"):
+        sd = datetime.fromisoformat(str(ev["start"])[:10]).replace(tzinfo=TZ)
+        ed = datetime.fromisoformat(str(ev["end"])[:10]).replace(tzinfo=TZ)
+        return sd, ed, True
+    sd = datetime.fromisoformat(ev["start"]).astimezone(TZ)
+    ed = datetime.fromisoformat(ev["end"]).astimezone(TZ)
+    return sd, ed, False
 
 
 def fmt_time(dt):
@@ -98,15 +70,20 @@ PIN_SVG = (
 )
 
 
+def fmt_heading(d):
+    # %-d isn't portable to Windows; strip the leading zero manually.
+    return d.strftime("%A, %B ") + str(d.day) + d.strftime(", %Y")
+
+
 def render_events(events):
     if not events:
-        return '<div class="empty">No scheduled maintenance in the next {} days.</div>'.format(
-            DAYS_AHEAD
+        return (
+            '<div class="empty">No scheduled maintenance in the next '
+            f"{DAYS_AHEAD} days.</div>"
         )
 
     # group by Eastern calendar date, preserving chronological order
-    groups = {}
-    order = []
+    groups, order = {}, []
     for ev in events:
         sd, ed, all_day = parse_times(ev)
         key = sd.date()
@@ -117,14 +94,16 @@ def render_events(events):
 
     out = []
     for key in order:
-        heading = key.strftime("%A, %B %-d, %Y") if os.name != "nt" else key.strftime("%A, %B %d, %Y")
         out.append('<section class="day-group">')
-        out.append(f'<div class="day-heading">{html.escape(heading)}</div>')
+        out.append(f'<div class="day-heading">{html.escape(fmt_heading(key))}</div>')
         for sd, ed, all_day, ev in groups[key]:
-            title = html.escape(ev.get("summary", "(no title)"))
             out.append('<div class="event">')
-            out.append(f'<div class="event-time">{html.escape(time_label(sd, ed, all_day))}</div>')
-            out.append(f'<div class="event-title">{title}</div>')
+            out.append(
+                f'<div class="event-time">{html.escape(time_label(sd, ed, all_day))}</div>'
+            )
+            out.append(
+                f'<div class="event-title">{html.escape(ev.get("title", "(no title)"))}</div>'
+            )
             loc = ev.get("location")
             if loc:
                 out.append(
@@ -142,8 +121,8 @@ def main():
     events = fetch_events()
     now_et = datetime.now(TZ)
     end_et = now_et + timedelta(days=DAYS_AHEAD)
-    rng = f"{now_et.strftime('%b %d')} – {end_et.strftime('%b %d, %Y')}"
-    updated = now_et.strftime("%b %d, %Y at %I:%M %p ET").replace(" 0", " ")
+    rng = f"{now_et.strftime('%b ')}{now_et.day} – {end_et.strftime('%b ')}{end_et.day}, {end_et.year}"
+    updated = now_et.strftime("%b ") + str(now_et.day) + now_et.strftime(", %Y at ") + fmt_time(now_et) + " ET"
 
     template = open("template.html", encoding="utf-8").read()
     page = (
@@ -160,26 +139,28 @@ def main():
 
 def _sample_events():
     base = datetime.now(TZ).replace(hour=0, minute=0, second=0, microsecond=0)
-    def iso(d):
-        return d.isoformat()
     return [
         {
-            "summary": "HVAC Filter Replacement",
-            "start": {"dateTime": iso(base + timedelta(days=1, hours=9))},
-            "end": {"dateTime": iso(base + timedelta(days=1, hours=11))},
+            "title": "HVAC Filter Replacement",
+            "start": (base + timedelta(days=1, hours=9)).isoformat(),
+            "end": (base + timedelta(days=1, hours=11)).isoformat(),
+            "allDay": False,
             "location": "Building A, Roof Units 1-4",
             "description": "Replace all primary filters. Coordinate with facilities for roof access.",
         },
         {
-            "summary": "Generator Load Test",
-            "start": {"dateTime": iso(base + timedelta(days=1, hours=14))},
-            "end": {"dateTime": iso(base + timedelta(days=1, hours=15, minutes=30))},
+            "title": "Generator Load Test",
+            "start": (base + timedelta(days=1, hours=14)).isoformat(),
+            "end": (base + timedelta(days=1, hours=15, minutes=30)).isoformat(),
+            "allDay": False,
             "location": "Main Electrical Room",
+            "description": "",
         },
         {
-            "summary": "Fire Suppression Inspection",
-            "start": {"date": (base + timedelta(days=8)).date().isoformat()},
-            "end": {"date": (base + timedelta(days=9)).date().isoformat()},
+            "title": "Fire Suppression Inspection",
+            "start": (base + timedelta(days=8)).date().isoformat(),
+            "end": (base + timedelta(days=9)).date().isoformat(),
+            "allDay": True,
             "location": "Entire Facility",
             "description": "Annual inspection by certified vendor.\nExpect brief alarm tests.",
         },

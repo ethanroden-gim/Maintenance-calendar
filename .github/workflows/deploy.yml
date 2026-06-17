@@ -35,8 +35,7 @@ jobs:
 
       - name: Generate page
         env:
-          GCAL_CREDENTIALS: ${{ secrets.GCAL_CREDENTIALS }}
-          CALENDAR_ID: ${{ vars.CALENDAR_ID }}
+          CALENDAR_FEED_URL: ${{ secrets.CALENDAR_FEED_URL }}
         run: python generate.py
 
       - uses: actions/configure-pages@v5
