@@ -111,7 +111,7 @@ def render_grid(events, grid_start, today):
             if d in grid_set:
                 buckets[d].append((0 if all_day else 1, sd, all_day, ev))
 
-    parts = ['<div class="cal-scroll"><div class="cal-grid" role="grid">']
+    parts = [f'<div class="cal-scroll"><div class="cal-grid" role="grid" style="--week-rows:{WEEKS}">']
     for name in WEEKDAY_HEADERS:
         cls = "cal-head weekend" if name in ("Sun", "Sat") else "cal-head"
         parts.append(f'<div class="{cls}">{name}</div>')
