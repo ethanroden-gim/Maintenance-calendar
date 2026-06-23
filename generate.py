@@ -20,7 +20,7 @@ from datetime import datetime, timedelta, date
 from zoneinfo import ZoneInfo
 
 TZ = ZoneInfo("America/New_York")
-WEEKS = int(os.environ.get("WEEKS", "3"))  # current week + next 2
+WEEKS = int(os.environ.get("WEEKS", "2"))  # current week + next 1
 GRID_DAYS = WEEKS * 7
 WEEKDAY_HEADERS = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"]  # Sunday-first
 
