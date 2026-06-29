@@ -44,13 +44,6 @@
       font-size: clamp(2rem, 3.4vw, 4rem);
       letter-spacing: 1px;
     }
-    header p {
-      margin-top: 0.5rem;
-      letter-spacing: 2px;
-      text-transform: uppercase;
-      font-size: clamp(0.9rem, 1.25vw, 1.5rem);
-      opacity: 0.85;
-    }
     main {
       width: 100%;
       max-width: none;
@@ -69,7 +62,7 @@
     }
     .cal-grid {
       display: grid;
-      grid-template-columns: 0.6fr 1fr 1fr 1fr 1fr 1fr 0.6fr;
+      grid-template-columns: 0.3fr 1fr 1fr 1fr 1fr 1fr 0.3fr;
       grid-template-rows: auto repeat(var(--week-rows, 3), 1fr);
       gap: 6px;
       flex: 1 1 auto;
@@ -123,28 +116,14 @@
     .chip.holiday .chip-time { color: var(--gim-tan); }
     .chip-title { display: block; font-size: clamp(0.85rem, 1.0vw, 1.25rem); font-weight: bold; color: #ffffff; }
     .chip-loc { display: block; font-size: clamp(0.7rem, 0.8vw, 1.0rem); color: var(--muted); }
-    footer {
-      width: 100%;
-      text-align: center;
-      padding: 0.85rem 1rem 0.25rem;
-      font-size: clamp(0.75rem, 0.9vw, 1.1rem);
-      letter-spacing: 1px;
-      color: var(--gim-white);
-      opacity: 0.7;
-      border-top: 1px solid rgba(122, 193, 66, 0.4);
-    }
   </style>
 </head>
 <body>
   <header>
     <h1>GIM Maintenance Schedule</h1>
-    <p>{{RANGE}}</p>
   </header>
   <main>
     {{GRID}}
   </main>
-  <footer>
-    &copy; GIM &mdash; All times Eastern (America/New_York) &middot; Last updated {{UPDATED}}
-  </footer>
 </body>
 </html>
